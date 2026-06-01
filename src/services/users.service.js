@@ -1,47 +1,57 @@
-const users = [];
+const db = require('../db/knex');
 
-function getAllUsers() {
-  return users;
+async function getAllUsers() {
+  return db('users')
+    .select('id', 'name', 'email', 'created_at as createdAt', 'updated_at as updatedAt')
+    .orderBy('id', 'asc');
 }
 
-function getUserById(id) {
-  return users.find((user) => user.id === id);
+async function getUserById(id) {
+  return db('users')
+    .select('id', 'name', 'email', 'created_at as createdAt', 'updated_at as updatedAt')
+    .where({ id })
+    .first();
 }
 
-function createUser(payload) {
-  const newUser = {
-    id: users.length > 0 ? users[users.length - 1].id + 1 : 1,
-    name: payload.name,
-    email: payload.email,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  };
-
-  users.push(newUser);
-  return newUser;
-}
-
-function updateUser(id, payload) {
-  const user = getUserById(id);
-  if (!user) {
-    return null;
-  }
-
-  user.name = payload.name ?? user.name;
-  user.email = payload.email ?? user.email;
-  user.updatedAt = new Date().toISOString();
+async function createUser(payload) {
+  const [user] = await db('users')
+    .insert({
+      name: payload.name,
+      email: payload.email
+    })
+    .returning(['id', 'name', 'email', 'created_at as createdAt', 'updated_at as updatedAt']);
 
   return user;
 }
 
-function deleteUser(id) {
-  const index = users.findIndex((user) => user.id === id);
-  if (index === -1) {
-    return false;
+async function updateUser(id, payload) {
+  const updatePayload = {
+    updated_at: db.fn.now()
+  };
+
+  if (payload.name) {
+    updatePayload.name = payload.name;
   }
 
-  users.splice(index, 1);
-  return true;
+  if (payload.email) {
+    updatePayload.email = payload.email;
+  }
+
+  const [user] = await db('users')
+    .where({ id })
+    .update(updatePayload)
+    .returning(['id', 'name', 'email', 'created_at as createdAt', 'updated_at as updatedAt']);
+
+  if (!user) {
+    return null;
+  }
+
+  return user;
+}
+
+async function deleteUser(id) {
+  const deletedCount = await db('users').where({ id }).del();
+  return deletedCount > 0;
 }
 
 module.exports = {
