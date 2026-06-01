@@ -14,14 +14,12 @@ async function getUserById(id) {
 }
 
 async function createUser(payload) {
-  const [user] = await db('users')
-    .insert({
-      name: payload.name,
-      email: payload.email
-    })
-    .returning(['id', 'name', 'email', 'created_at as createdAt', 'updated_at as updatedAt']);
+  const [id] = await db('users').insert({
+    name: payload.name,
+    email: payload.email
+  });
 
-  return user;
+  return getUserById(id);
 }
 
 async function updateUser(id, payload) {
@@ -37,16 +35,13 @@ async function updateUser(id, payload) {
     updatePayload.email = payload.email;
   }
 
-  const [user] = await db('users')
-    .where({ id })
-    .update(updatePayload)
-    .returning(['id', 'name', 'email', 'created_at as createdAt', 'updated_at as updatedAt']);
+  const updatedCount = await db('users').where({ id }).update(updatePayload);
 
-  if (!user) {
+  if (updatedCount === 0) {
     return null;
   }
 
-  return user;
+  return getUserById(id);
 }
 
 async function deleteUser(id) {

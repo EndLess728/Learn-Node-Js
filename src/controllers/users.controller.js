@@ -36,7 +36,7 @@ async function createUser(req, res, next) {
     const user = await usersService.createUser({ name, email });
     return res.status(201).json(apiResponse.success(user, 'User created'));
   } catch (error) {
-    if (error.code === '23505') {
+    if (error.code === '23505' || error.code === 'ER_DUP_ENTRY') {
       return res.status(409).json(apiResponse.failure('Email already exists'));
     }
 
@@ -60,7 +60,7 @@ async function updateUser(req, res, next) {
 
     return res.status(200).json(apiResponse.success(user, 'User updated'));
   } catch (error) {
-    if (error.code === '23505') {
+    if (error.code === '23505' || error.code === 'ER_DUP_ENTRY') {
       return res.status(409).json(apiResponse.failure('Email already exists'));
     }
 

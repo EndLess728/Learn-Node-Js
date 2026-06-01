@@ -9,8 +9,8 @@
     "start": "node src/server.js",
     "lint": "eslint .",
     "db:migrate": "knex migrate:latest",
-    "db:up": "brew services start postgresql@16",
-    "db:down": "brew services stop postgresql@16"
+    "db:up": "brew services start mysql",
+    "db:down": "brew services stop mysql"
   },
   "keywords": [
     "nodejs",
@@ -25,7 +25,7 @@
     "express": "^4.19.2",
     "knex": "^3.2.10",
     "morgan": "^1.10.0",
-    "pg": "^8.21.0"
+    "mysql2": "^3.22.4"
   },
   "devDependencies": {
     "eslint": "^9.9.1",

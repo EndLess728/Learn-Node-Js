@@ -23,7 +23,7 @@ learning-node/
 │  │  └─ users.controller.js    # User CRUD controllers
 │  ├─ services/
 │  │  └─ health.service.js      # Business logic layer
-│  │  └─ users.service.js       # PostgreSQL user CRUD logic
+│  │  └─ users.service.js       # MySQL user CRUD logic
 │  ├─ middlewares/
 │  │  └─ error.middleware.js    # Global error handling
 │  └─ utils/
@@ -50,19 +50,19 @@ learning-node/
    cp .env.example .env
    ```
 
-3. Create PostgreSQL database:
+3. Create MySQL database:
 
    - Database name: `learning_node`
    - Default connection in `.env.example`:
-     `postgresql://postgres:postgres@localhost:5432/learning_node`
+     `mysql://root:password@localhost:3306/learning_node`
 
-   Install PostgreSQL 16 (one time):
+   Install MySQL (one time):
 
    ```bash
-   brew install postgresql@16
+   brew install mysql
    ```
 
-   Start PostgreSQL service:
+   Start MySQL service:
 
    ```bash
    npm run db:up
@@ -71,9 +71,8 @@ learning-node/
    Create DB user and database (first time only):
 
    ```bash
-   "$(brew --prefix)"/opt/postgresql@16/bin/createuser -s postgres
-   "$(brew --prefix)"/opt/postgresql@16/bin/createdb learning_node
-   "$(brew --prefix)"/opt/postgresql@16/bin/psql -d postgres -c "ALTER USER postgres WITH PASSWORD 'postgres';"
+   mysql -u root -e "CREATE DATABASE IF NOT EXISTS learning_node;"
+   mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'password'; FLUSH PRIVILEGES;"
    ```
 
 4. Run migrations:
@@ -117,14 +116,14 @@ curl http://localhost:5001/api/users
 
 ## Common DB Error
 
-If you get `ECONNREFUSED` during `npm run db:migrate`, your app cannot reach PostgreSQL.
+If you get `ECONNREFUSED` during `npm run db:migrate`, your app cannot reach MySQL.
 
 Quick fix:
 
 1. Start DB: `npm run db:up`
-2. Ensure DB exists: `createdb learning_node`
+2. Ensure DB exists: `mysql -u root -e "CREATE DATABASE IF NOT EXISTS learning_node;"`
 3. Ensure `.env` has:
-   `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/learning_node`
+   `DATABASE_URL=mysql://root:password@localhost:3306/learning_node`
 4. Run migration again: `npm run db:migrate`
 
 ## Why this structure?
