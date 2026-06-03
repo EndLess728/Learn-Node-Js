@@ -1,19 +1,19 @@
-function success(data, message = 'Success') {
+function success(data, message = "Success") {
   return {
-    ok: true,
+    success: true,
     message,
-    data
+    data,
   };
 }
 
-function failure(message = 'Something went wrong') {
+function failure(message = "Something went wrong") {
   return {
-    ok: false,
-    message
+    success: false,
+    message,
   };
 }
 
 module.exports = {
   success,
-  failure
+  failure,
 };
