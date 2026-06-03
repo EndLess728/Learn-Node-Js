@@ -1,43 +1,65 @@
-const db = require('../db/knex');
+const db = require("../db/mysql");
+
+const userColumns = `
+  id,
+  name,
+  email,
+  created_at AS createdAt,
+  updated_at AS updatedAt
+`;
 
 async function getAllUsers() {
-  return db('users')
-    .select('id', 'name', 'email', 'created_at as createdAt', 'updated_at as updatedAt')
-    .orderBy('id', 'asc');
+  const [rows] = await db.execute(
+    `SELECT ${userColumns} FROM users ORDER BY id ASC`,
+  );
+
+  return rows;
 }
 
 async function getUserById(id) {
-  return db('users')
-    .select('id', 'name', 'email', 'created_at as createdAt', 'updated_at as updatedAt')
-    .where({ id })
-    .first();
+  const [rows] = await db.execute(
+    `SELECT ${userColumns} FROM users WHERE id = ? LIMIT 1`,
+    [id],
+  );
+
+  return rows[0];
 }
 
 async function createUser(payload) {
-  const [id] = await db('users').insert({
-    name: payload.name,
-    email: payload.email
-  });
+  const [result] = await db.execute("INSERT INTO users (name, email) VALUES (?, ?)", [
+    payload.name,
+    payload.email,
+  ]);
 
-  return getUserById(id);
+  return getUserById(result.insertId);
 }
 
 async function updateUser(id, payload) {
-  const updatePayload = {
-    updated_at: db.fn.now()
-  };
+  const fields = [];
+  const values = [];
 
   if (payload.name) {
-    updatePayload.name = payload.name;
+    fields.push("name = ?");
+    values.push(payload.name);
   }
 
   if (payload.email) {
-    updatePayload.email = payload.email;
+    fields.push("email = ?");
+    values.push(payload.email);
   }
 
-  const updatedCount = await db('users').where({ id }).update(updatePayload);
+  if (fields.length === 0) {
+    return getUserById(id);
+  }
 
-  if (updatedCount === 0) {
+  values.push(id);
+
+  const [result] = await db.execute(
+    `UPDATE users SET ${fields.join(", ")}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+    values,
+  );
+
+  if (result.affectedRows === 0) {
     return null;
   }
 
@@ -45,8 +67,9 @@ async function updateUser(id, payload) {
 }
 
 async function deleteUser(id) {
-  const deletedCount = await db('users').where({ id }).del();
-  return deletedCount > 0;
+  const [result] = await db.execute("DELETE FROM users WHERE id = ?", [id]);
+
+  return result.affectedRows > 0;
 }
 
 module.exports = {
@@ -54,5 +77,5 @@ module.exports = {
   getUserById,
   createUser,
   updateUser,
-  deleteUser
+  deleteUser,
 };

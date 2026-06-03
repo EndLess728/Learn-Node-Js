@@ -12,8 +12,8 @@ learning-node/
 │  ├─ config/
 │  │  └─ env.js                 # Environment variable config
 │  ├─ db/
-│  │  ├─ knex.js                 # Database connection
-│  │  └─ migrations/             # SQL schema migrations
+│  │  ├─ mysql.js                # Raw MySQL connection pool
+│  │  └─ schema.sql              # Raw SQL table setup
 │  ├─ routes/
 │  │  ├─ index.js               # Route aggregator
 │  │  └─ health.routes.js       # Health check route
@@ -30,7 +30,6 @@ learning-node/
 │     └─ api-response.js        # Shared response helper
 ├─ docs/
 │  └─ learning-path.md          # Suggested topic roadmap
-├─ knexfile.js
 ├─ .env.example
 ├─ .gitignore
 └─ package.json
@@ -75,10 +74,10 @@ learning-node/
    mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'password'; FLUSH PRIVILEGES;"
    ```
 
-4. Run migrations:
+4. Create tables with raw SQL:
 
    ```bash
-   npm run db:migrate
+   mysql -u root -p learning_node < src/db/schema.sql
    ```
 
 5. Start in dev mode:
@@ -116,7 +115,7 @@ curl http://localhost:5001/api/users
 
 ## Common DB Error
 
-If you get `ECONNREFUSED` during `npm run db:migrate`, your app cannot reach MySQL.
+If you get `ECONNREFUSED`, your app cannot reach MySQL.
 
 Quick fix:
 
@@ -124,7 +123,7 @@ Quick fix:
 2. Ensure DB exists: `mysql -u root -e "CREATE DATABASE IF NOT EXISTS learning_node;"`
 3. Ensure `.env` has:
    `DATABASE_URL=mysql://root:password@localhost:3306/learning_node`
-4. Run migration again: `npm run db:migrate`
+4. Create tables again: `mysql -u root -p learning_node < src/db/schema.sql`
 
 ## Why this structure?
 
